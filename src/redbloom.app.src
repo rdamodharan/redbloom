@@ -1,0 +1,12 @@
+{application, redbloom,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { redbloom_app, []}},
+  {env, []}
+ ]}.
