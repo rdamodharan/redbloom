@@ -1,6 +1,6 @@
 -module(murmur3).
 -author('Damodharan Rajalingam').
--export([ hash32/2 ]).
+-export([ hash32/2 ,hash32/1 ]).
 
 -define(C1, 16#cc9e2d51).
 -define(C2, 16#1b873593).
@@ -51,3 +51,5 @@ hash32_impl(Data, Seed) ->
 
 hash32(Data, Seed) when is_binary(Data) -> hash32_impl(Data, Seed);
 hash32(Data, Seed) -> hash32(term_to_binary(Data), Seed).
+
+hash32(Data) -> hash32(Data, 16#BADDEED).
