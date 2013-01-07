@@ -18,8 +18,7 @@ hash32_fmix(H) ->
     H3 = ((H2 bxor (H2 bsr 13)) * 16#c2b2ae35) band ?MASK32,
     H3 bxor (H3 bsr 16).
     
-hash32_body(<<A:8,B:8,C:8,D:8, Rest/binary>>, Hash) -> 
-    K1 = (D bsl 24) bor (C bsl 16) bor (B bsl 8) bor A,
+hash32_body(<<K1:32/little, Rest/binary>>, Hash) -> 
 %    io:format("Key block: ~w, Rest: ~w~n", [K1, Rest]),
     K2 = hash32_mmix(K1),
     Hash2 = Hash bxor K2,
@@ -31,19 +30,18 @@ hash32_body(Data,Hash) ->
 %    io:format("At end of body: [~w, ~w]~n", [Data, Hash]),
     {Data, Hash}.
 
+hash32_tail_mix(K1, Hash) -> Hash bxor hash32_mmix(K1).
 
-hash32_tail(Tail, Hash) -> 
-    K1 = lists:foldr(fun(X, Acc) -> (Acc bsl 8) bxor X end, 0, binary_to_list(Tail)),
-    Hash bxor hash32_mmix(K1).
+hash32_tail(<<>>, Hash) -> Hash;
+hash32_tail(<<K1:8>>, Hash) -> hash32_tail_mix(K1, Hash);
+hash32_tail(<<K1:16/little>>, Hash) -> hash32_tail_mix(K1, Hash);
+hash32_tail(<<K1:24/little>>, Hash) -> hash32_tail_mix(K1, Hash).
 
 hash32_impl(Data, Seed) ->
     Len = byte_size(Data),
     {Data2, Hash2} = hash32_body(Data, Seed),
 %    io:format("After body calc: ~w~n",[Hash2]),
-    Hash3 = case Data2 of
-            <<>> -> Hash2;
-            Tail -> hash32_tail(Tail, Hash2)
-        end,
+    Hash3 = hash32_tail(Data2, Hash2),
 %    io:format("After Tail calc: ~w~n",[Hash3]),
     Hash4 = Hash3 bxor Len,
 %    io:format("After Len xor: ~w~n",[Hash4]),
