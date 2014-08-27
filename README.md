@@ -9,7 +9,3 @@ redbloom:contains(Filter, "item1").
 redbloom:contains(Filter, "item3").
 redbloom:close(Filter).
 ```
-
-
-
-
